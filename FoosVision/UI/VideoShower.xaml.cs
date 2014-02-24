@@ -68,11 +68,12 @@ namespace SeeBoard
                         Image<Bgr, byte> resized = img; // img.Resize(720, 1280, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
 
                         m_Engine.TableImage = resized;
-                        //m_Engine.Process(17, 89, 33, 135, 42, 201);
-                        m_Engine.Process(17, 32, 130, 256, 118, 256);
+                        m_Engine.Process();
+                        var imageToShow = m_Engine.TableImage;
+
 
                         Dispatcher.Invoke(new Action(() =>
-                        vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(m_Engine.TableImage)));
+                            vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(imageToShow)));
                         resized = null;
                         img = null;
                         //GC.Collect();

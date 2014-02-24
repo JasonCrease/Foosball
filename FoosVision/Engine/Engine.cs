@@ -14,18 +14,14 @@ namespace Engine
         {
         }
 
-        public string TableImagePath { get; set; }
         public Image<Bgr, byte> TableImage { get; set; }
-        public Image<Bgr, byte> TableImageMasked { get; set; }
-        public Image<Gray, byte>[] Channels { get; set; }
-        public Image<Gray, byte> ChannelsTogether { get; set; }
 
-        public void Process(int hmin, int hmax, int smin, int smax, int vmin, int vmax)
+        public void Process()
         {
-            Image<Gray, byte> threshImage = ImageProcess.ThresholdHsv(TableImage, hmin, hmax, smin, smax, vmin, vmax);
-            PointF centrePoint = ImageProcess.GetCentreOfMass(threshImage);
+            //PointF[] tableCorners = Table.FindTable(TableImage);
+            PointF ballPos = Ball.GetPosition(TableImage);
 
-            CircleF circle = new CircleF(centrePoint, 10);
+            CircleF circle = new CircleF(ballPos, 10);
             TableImage.Draw(circle, new Bgr(70, 115, 255), 2);
         }
     }

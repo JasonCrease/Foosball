@@ -8,7 +8,7 @@ using System.Drawing;
 
 namespace Engine
 {
-    class ImageProcess
+    public class ImageProcess
     {
         public static Image<Gray, byte> ThresholdHsv(Image<Bgr, Byte> image, int hmin, int hmax, int smin, int smax, int vmin, int vmax)
         {
