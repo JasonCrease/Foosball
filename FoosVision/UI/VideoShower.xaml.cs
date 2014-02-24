@@ -23,6 +23,8 @@ namespace SeeBoard
     {
         public VideoShower()
         {
+            this.Left = 0;
+            this.Top = 0;
             InitializeComponent();
         }
 
@@ -30,35 +32,57 @@ namespace SeeBoard
         Engine.Engine m_Engine;
         object frameLock = new object();
 
-        private void NextFrame(object dontCare)
+        int m_ExpectedFrame = 0;
+        int m_ActualFrame = 0;
+        int m_FramesDropped = 0;
+
+        private void ExpectedFrameUpdate(object dontCare)
         {
-            Dispatcher.Invoke(new Action(() => ShowFrame() ));
+            m_ExpectedFrame++;
         }
 
-        private void ShowFrame()
+        private void ShowFrames(object dontCare)
         {
-            if (!m_Playing) return;
-
-            lock (frameLock)
+            for (; ; )
             {
-                Image<Bgr, byte> img = m_Capture.QueryFrame();
-                if (img != null)
+                if (m_ActualFrame < m_ExpectedFrame)
                 {
-                    Image<Bgr, byte> resized = img; // img.Resize(720, 1280, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
-
-                    m_Engine.TableImage = resized;
-                    //m_Engine.Process(17, 89, 33, 135, 42, 201);
-                    m_Engine.Process(17, 32, 130, 256, 118, 256);
-
-                    vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(m_Engine.TableImage);
-                    resized = null;
-                    img = null;
-                    //GC.Collect();
+                    if (m_Capture.Grab())
+                    {
+                        m_ActualFrame++;
+                        m_FramesDropped++;
+                    }
+                    else
+                    {
+                        m_Playing = false;
+                        m_Timer = null;
+                        return;
+                    }
                 }
                 else
                 {
-                    m_Playing = false;
-                    m_Timer = null;
+                    m_ActualFrame++;
+                    Image<Bgr, byte> img = m_Capture.QueryFrame();
+                    if (img != null)
+                    {
+                        Image<Bgr, byte> resized = img; // img.Resize(720, 1280, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
+
+                        m_Engine.TableImage = resized;
+                        //m_Engine.Process(17, 89, 33, 135, 42, 201);
+                        m_Engine.Process(17, 32, 130, 256, 118, 256);
+
+                        Dispatcher.Invoke(new Action(() =>
+                        vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(m_Engine.TableImage)));
+                        resized = null;
+                        img = null;
+                        //GC.Collect();
+                    }
+                    else
+                    {
+                        m_Playing = false;
+                        m_Timer = null;
+                        return;
+                    }
                 }
             }
         }
@@ -70,9 +94,12 @@ namespace SeeBoard
             m_Playing = true;
             m_Engine = new Engine.Engine();
             m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vid2.mp4"));
-            m_Timer = new Timer(NextFrame, null, 0, 1000 / 12);
+            m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 29);
+            m_DisplayFrames = new Thread(ShowFrames);
+            m_DisplayFrames.Start();
         }
 
         Timer m_Timer;
+        Thread m_DisplayFrames;
     }
 }
