@@ -30,14 +30,16 @@ namespace Engine
             DebugImage = tableImage.Copy();
 
             m_Ball.Update(tableImage);
-            DebugImage.Draw(new CircleF(m_Ball.Pos, 10), new Bgr(70, 115, 255), 2);
+            if (m_Ball.Pos.X > 0 && m_Ball.Pos.Y > 0 && m_Ball.Pos.X < 1280 && m_Ball.Pos.Y < 720)
+                DebugImage.Draw(new CircleF(m_Ball.Pos, 10), new Bgr(70, 115, 255), 2);
 
-             m_Pitch.Update(tableImage);
+            if(m_FrameNumber % 10 == 0)
+                m_Pitch.Update(tableImage);
 
-             DebugImage.Draw(new CircleF(m_Pitch.TopLeft, 12), new Bgr(0, 0, 200), 4);
-             DebugImage.Draw(new CircleF(m_Pitch.TopRight, 12), new Bgr(0, 100, 200), 4);
-             DebugImage.Draw(new CircleF(m_Pitch.BottomLeft, 12), new Bgr(100, 0, 200), 4);
-             DebugImage.Draw(new CircleF(m_Pitch.BottomRight, 12), new Bgr(0, 200, 200), 4);
+            DebugImage.Draw(new CircleF(m_Pitch.TopLeft, 12), new Bgr(0, 0, 200), 4);
+            DebugImage.Draw(new CircleF(m_Pitch.TopRight, 12), new Bgr(0, 100, 200), 4);
+            DebugImage.Draw(new CircleF(m_Pitch.BottomLeft, 12), new Bgr(100, 0, 200), 4);
+            DebugImage.Draw(new CircleF(m_Pitch.BottomRight, 12), new Bgr(0, 200, 200), 4);
         }
     }
 }
