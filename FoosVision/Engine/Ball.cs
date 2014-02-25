@@ -17,7 +17,7 @@ namespace Engine
             m_KalmanFilter = new Kalman(4, 2, 0);
             m_KalmanFilter.CorrectedState = new Matrix<float>(new float[] { 0f, 0f, 0f, 0f });
             m_KalmanFilter.TransitionMatrix = new Matrix<float>(new float[,] { { 1f, 0, 1, 0 }, { 0, 1f, 0, 1 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } });
-            m_KalmanFilter.MeasurementNoiseCovariance = new Matrix<float>(new float[,] { { 0.1f, 0 }, { 0, 0.1f } });
+            m_KalmanFilter.MeasurementNoiseCovariance = new Matrix<float>(new float[,] { { 0.002f, 0 }, { 0, 0.002f } });
             m_KalmanFilter.ProcessNoiseCovariance = new Matrix<float>(new float[,] { { 0.001f, 0, 0, 0 }, { 0, 0.001f, 0, 0 }, { 0, 0, 0.001f, 0 }, { 0, 0, 0, 0.001f } });
             m_KalmanFilter.ErrorCovariancePost = new Matrix<float>(new float[,] { { 1f, 0, 0, 0 }, { 0, 1f, 0, 0 }, { 0, 0, 0f, 0 }, { 0, 0, 0, 1f } });
             m_KalmanFilter.MeasurementMatrix = new Matrix<float>(new float[,] { { 1, 0, 0, 0 }, { 0, 1, 0, 0 } });
