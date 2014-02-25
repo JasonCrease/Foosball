@@ -96,10 +96,13 @@ namespace Engine
             BottomLeft = PointF.Empty;
             BottomRight = PointF.Empty;
 
+            int ThresholdImageWidth = ThresholdImage.Width;
+            int ThresholdImageHeight = ThresholdImage.Height;
+
             int widthOver2 = ThresholdImage.Width / 2;
             int heightOver2 = ThresholdImage.Height / 2;
 
-            for (int startY = 0; startY < ThresholdImage.Height; startY++)
+            for (int startY = 0; startY < ThresholdImageHeight; startY++)
                 for (int x = 0; x < startY; x++)
                 {
                     int y = startY - x;
@@ -111,11 +114,11 @@ namespace Engine
                 }
             next1:
 
-            for (int startY = 0; startY < ThresholdImage.Height; startY++)
+            for (int startY = 0; startY < ThresholdImageHeight; startY++)
                 for (int x = 0; x < startY; x++)
                 {
                     int y = startY - x;
-                    int x2 = ThresholdImage.Width - x - 1;
+                    int x2 = ThresholdImageWidth - x - 1;
                     if (ThresholdImage.Data[y, x2, 0] > 0)
                     {
                         TopRight = new PointF((x2 - offset) * scale, (y - offset) * scale);
@@ -124,10 +127,10 @@ namespace Engine
                 }
             next2:
 
-            for (int startY = 0; startY < ThresholdImage.Height; startY++)
+            for (int startY = 0; startY < ThresholdImageHeight; startY++)
                 for (int x = 0; x < startY; x++)
                 {
-                    int y = ThresholdImage.Height - (startY - x) - 1;
+                    int y = ThresholdImageHeight - (startY - x) - 1;
                     if (ThresholdImage.Data[y, x, 0] > 0)
                     {
                         BottomLeft = new PointF((x + offset) * scale, (y + offset) * scale);
@@ -136,11 +139,11 @@ namespace Engine
                 }
             next3:
 
-            for (int startY = 0; startY < ThresholdImage.Height; startY++)
+            for (int startY = 0; startY < ThresholdImageHeight; startY++)
                 for (int x = 0; x < startY; x++)
                 {
-                    int y = ThresholdImage.Height - (startY - x) - 1;
-                    int x2 = ThresholdImage.Width - x - 1;
+                    int y = ThresholdImageHeight - (startY - x) - 1;
+                    int x2 = ThresholdImageWidth - x - 1;
                     if (ThresholdImage.Data[y, x2, 0] > 0)
                     {
                         BottomRight = new PointF((x2 - offset) * scale, (y + offset) * scale);
