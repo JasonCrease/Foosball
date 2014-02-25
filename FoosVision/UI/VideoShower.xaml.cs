@@ -43,6 +43,8 @@ namespace SeeBoard
 
         private void ShowFrames(object dontCare)
         {
+            Engine.TableFinder finder = new Engine.TableFinder();
+
             for (; ; )
             {
                 if (m_ActualFrame < m_ExpectedFrame)
@@ -59,6 +61,10 @@ namespace SeeBoard
                         return;
                     }
                 }
+                else if (m_ActualFrame > m_ExpectedFrame)
+                {
+                    Thread.Sleep(30);
+                }
                 else
                 {
                     m_ActualFrame++;
@@ -71,18 +77,21 @@ namespace SeeBoard
                         m_Engine.Process();
                         var imageToShow = m_Engine.TableImage;
 
-                        Engine.TableFinder finder = new Engine.TableFinder();
                         var points = finder.GetTableCorners(resized);
 
-                        imageToShow.Draw(new CircleF(points[0], 10), new Bgr(0, 0, 200), 4);
-                        imageToShow.Draw(new CircleF(points[1], 10), new Bgr(0, 100, 200), 4);
-                        imageToShow.Draw(new CircleF(points[2], 10), new Bgr(100, 0, 200), 4);
-                        imageToShow.Draw(new CircleF(points[3], 10), new Bgr(0, 200, 200), 4);
+                        imageToShow.Draw(new CircleF(points[0], 12), new Bgr(0, 0, 200), 4);
+                        imageToShow.Draw(new CircleF(points[1], 12), new Bgr(0, 100, 200), 4);
+                        imageToShow.Draw(new CircleF(points[2], 12), new Bgr(100, 0, 200), 4);
+                        imageToShow.Draw(new CircleF(points[3], 12), new Bgr(0, 200, 200), 4);
 
                         Dispatcher.Invoke(new Action(() =>
-                            vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(imageToShow)));
+                            {
+                                vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(imageToShow);
+                                labelBallSpeed.Content = m_Engine.BallSpeed.ToString("#.##");
+                            }));
                         resized = null;
                         img = null;
+
                         //GC.Collect();
                     }
                     else
@@ -102,7 +111,7 @@ namespace SeeBoard
             m_Playing = true;
             m_Engine = new Engine.Engine();
             m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vid4.mp4"));
-            m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 29);
+            m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 12);
             m_DisplayFrames = new Thread(ShowFrames);
             m_DisplayFrames.Start();
         }
