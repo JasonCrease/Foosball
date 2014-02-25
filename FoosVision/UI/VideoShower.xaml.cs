@@ -43,7 +43,6 @@ namespace SeeBoard
 
         private void ShowFrames(object dontCare)
         {
-            Engine.TableFinder finder = new Engine.TableFinder();
 
             for (; ; )
             {
@@ -78,21 +77,13 @@ namespace SeeBoard
                     {
                         Image<Bgr, byte> resized = img; // img.Resize(720, 1280, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
 
-                        m_Engine.TableImage = resized;
-                        m_Engine.Process();
-                        var imageToShow = m_Engine.TableImage;
-
-                        var points = finder.GetTableCorners(resized);
-
-                        imageToShow.Draw(new CircleF(points[0], 12), new Bgr(0, 0, 200), 4);
-                        imageToShow.Draw(new CircleF(points[1], 12), new Bgr(0, 100, 200), 4);
-                        imageToShow.Draw(new CircleF(points[2], 12), new Bgr(100, 0, 200), 4);
-                        imageToShow.Draw(new CircleF(points[3], 12), new Bgr(0, 200, 200), 4);
+                        m_Engine.ProcessNextFrame(resized);
+                        var imageToShow = m_Engine.DebugImage;
 
                         Dispatcher.Invoke(new Action(() =>
                             {
                                 vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(imageToShow);
-                                labelBallSpeed.Content = m_Engine.BallSpeed.ToString("#.##");
+                                labelBallSpeed.Content = m_Engine.Ball.Speed.ToString("#.##");
                             }));
                         resized = null;
                         img = null;
@@ -120,7 +111,7 @@ namespace SeeBoard
         {
             m_Playing = true;
             m_Engine = new Engine.Engine();
-            m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vid6.mp4"));
+            m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vid5.mp4"));
             m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 29);
             m_DisplayFrames = new Thread(ShowFrames);
             m_DisplayFrames.Start();

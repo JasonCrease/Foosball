@@ -12,40 +12,32 @@ namespace Engine
     {
         public Engine()
         {
-            m_PreviousBallPositions = new List<PointF>();
+            m_Pitch = new Pitch();
+            m_Ball = new Ball();
         }
 
-        private int m_BallPosCount;
-        public double BallSpeed { get; private set; }
-        public Image<Bgr, byte> TableImage { get; set; }
-        private List<PointF> m_PreviousBallPositions;
+        private Pitch m_Pitch;
+        private Ball m_Ball;
 
-        public void Process()
+        public Ball Ball { get { return m_Ball; } }
+        private int m_FrameNumber = 0;
+
+        public Image<Bgr, byte> DebugImage { get; set; }
+
+        public void ProcessNextFrame(Image<Bgr, byte> tableImage)
         {
-            //PointF[] tableCorners = Table.FindTable(TableImage);
-            PointF ballPos = Ball.GetPosition(TableImage);
+            m_FrameNumber++;
+            DebugImage = tableImage.Copy();
 
-            CircleF circle = new CircleF(ballPos, 10);
-            TableImage.Draw(circle, new Bgr(70, 115, 255), 2);
+            m_Ball.Update(tableImage);
+            DebugImage.Draw(new CircleF(m_Ball.Pos, 10), new Bgr(70, 115, 255), 2);
 
-            if (ballPos != PointF.Empty)
-            {
-                m_BallPosCount++;
-                m_PreviousBallPositions.Add(ballPos);
-            }
+             m_Pitch.Update(tableImage);
 
-            if (m_BallPosCount > 2)
-                SetBallSpeed();
-        }
-
-        private void SetBallSpeed()
-        {
-            PointF prevPoint = m_PreviousBallPositions[m_BallPosCount - 2];
-            PointF thisPoint = m_PreviousBallPositions[m_BallPosCount - 1];
-
-            double answer = Math.Sqrt(Math.Pow(prevPoint.X - thisPoint.X, 2) + Math.Pow(prevPoint.Y - thisPoint.Y, 2));
-
-            BallSpeed = Math.Min(answer, 100f);
+             DebugImage.Draw(new CircleF(m_Pitch.TopLeft, 12), new Bgr(0, 0, 200), 4);
+             DebugImage.Draw(new CircleF(m_Pitch.TopRight, 12), new Bgr(0, 100, 200), 4);
+             DebugImage.Draw(new CircleF(m_Pitch.BottomLeft, 12), new Bgr(100, 0, 200), 4);
+             DebugImage.Draw(new CircleF(m_Pitch.BottomRight, 12), new Bgr(0, 200, 200), 4);
         }
     }
 }

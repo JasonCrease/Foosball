@@ -52,11 +52,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Ball.cs" />
-    <Compile Include="BallTracker.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="ImageProcess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TableFinder.cs" />
+    <Compile Include="Pitch.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

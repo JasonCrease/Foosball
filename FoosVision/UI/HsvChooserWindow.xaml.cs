@@ -84,9 +84,9 @@ namespace FoosVision
             //return;
 
             m_Engine = new Engine.Engine();
-            m_Engine.TableImage = tableImage;
+            m_Engine.ProcessNextFrame(tableImage);
             
-            var resultImage = Engine.ImageProcess.ThresholdHsv(m_Engine.TableImage, 
+            var resultImage = Engine.ImageProcess.ThresholdHsv(m_Engine.DebugImage, 
                 (int)SliderHmin.Value, (int)SliderHmax.Value, 
                 (int)SliderSmin.Value, (int)SliderSmax.Value, 
                 (int)SliderVmin.Value, (int)SliderVmax.Value);
