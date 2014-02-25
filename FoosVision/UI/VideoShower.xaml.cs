@@ -47,23 +47,28 @@ namespace SeeBoard
 
             for (; ; )
             {
-                if (m_ActualFrame < m_ExpectedFrame)
+                if (m_ActualFrame < m_ExpectedFrame)    // We're behind
                 {
-                    if (m_Capture.Grab())
+                    if (m_Capture.Grab())   // So grab the next frame, but don't process it
                     {
                         m_ActualFrame++;
                         m_FramesDropped++;
                     }
-                    else
+                    else       // No frames left. So exit loop
                     {
                         m_Playing = false;
-                        m_Timer = null;
+
+                        if (m_Timer != null)
+                        {
+                            m_Timer.Change(-1, -1);
+                            m_Timer = null;
+                        }
                         return;
                     }
                 }
                 else if (m_ActualFrame > m_ExpectedFrame)
                 {
-                    Thread.Sleep(30);
+                    Thread.Sleep(10);
                 }
                 else
                 {
@@ -97,7 +102,12 @@ namespace SeeBoard
                     else
                     {
                         m_Playing = false;
-                        m_Timer = null;
+
+                        if (m_Timer != null)
+                        {
+                            m_Timer.Change(-1, -1);
+                            m_Timer = null;
+                        }
                         return;
                     }
                 }
@@ -110,8 +120,8 @@ namespace SeeBoard
         {
             m_Playing = true;
             m_Engine = new Engine.Engine();
-            m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vid4.mp4"));
-            m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 12);
+            m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vid6.mp4"));
+            m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 29);
             m_DisplayFrames = new Thread(ShowFrames);
             m_DisplayFrames.Start();
         }
