@@ -41,14 +41,17 @@ namespace Engine
             private set;
         }
 
-        public System.Drawing.PointF[] GetTableCorners(Emgu.CV.Image<Emgu.CV.Structure.Bgr, byte> TableImage)
+        public PointF m_OldTLPoint = PointF.Empty;
+        public PointF m_OldTRPoint = PointF.Empty;
+        public PointF m_OldBLPoint = PointF.Empty;
+        public PointF m_OldBRPoint = PointF.Empty;
+
+        public PointF[] GetTableCorners(Image<Bgr, byte> nowImage)
         {
+
             int scale = 2;
             int offset = 4;
-            DownImage = TableImage.Convert<Bgr, Byte>().PyrDown();
-            //GrayImage = TableImage.Convert<Gray, Byte>().PyrDown().PyrDown();
-
-            //ThresholdImage = ImageProcess.ThresholdHsv(DownImage, 0, 23, 40, 143, 118, 256);    // For wood
+            DownImage = nowImage.Convert<Bgr, Byte>().PyrDown();
             ThresholdImage = ImageProcess.ThresholdHsv(DownImage, 22, 89, 33, 135, 42, 201);  // For green
             ThresholdImage = ThresholdImage.Erode(1);
             ThresholdImage = ThresholdImage.Dilate(1);
@@ -111,10 +114,31 @@ namespace Engine
                 }
             next4:
 
-            ThresholdImage.Draw(new CircleF(topLeft, 10), new Gray(190), 4);
-            ThresholdImage.Draw(new CircleF(topRight, 11), new Gray(190), 6);
-            ThresholdImage.Draw(new CircleF(bottomLeft, 12), new Gray(190), 8);
-            ThresholdImage.Draw(new CircleF(bottomRight, 13), new Gray(190), 10);
+
+            if (m_OldTLPoint == Point.Empty)
+            {
+                m_OldBLPoint = bottomLeft;
+                m_OldBRPoint = bottomRight;
+                m_OldTLPoint = topLeft;
+                m_OldTRPoint = topRight;
+            }
+            else
+            {
+                const float rate = 0.2f;
+                bottomLeft.X = (bottomLeft.X * rate) + (m_OldBLPoint.X * (1 - rate));
+                bottomLeft.Y = (bottomLeft.Y * rate) + (m_OldBLPoint.Y * (1 - rate));
+                bottomRight.X = (bottomRight.X * rate) + (m_OldBRPoint.X * (1 - rate));
+                bottomRight.Y = (bottomRight.Y * rate) + (m_OldBRPoint.Y * (1 - rate));
+                topLeft.X = (topLeft.X * rate) + (m_OldTLPoint.X * (1 - rate));
+                topLeft.Y = (topLeft.Y * rate) + (m_OldTLPoint.Y * (1 - rate));
+                topRight.X = (topRight.X * rate) + (m_OldTRPoint.X * (1 - rate));
+                topRight.Y = (topRight.Y * rate) + (m_OldTRPoint.Y * (1 - rate));
+
+                m_OldBLPoint = bottomLeft;
+                m_OldBRPoint = bottomRight;
+                m_OldTLPoint = topLeft;
+                m_OldTRPoint = topRight;
+            }
 
             return new PointF[] { topLeft, topRight, bottomLeft, bottomRight };
         }
