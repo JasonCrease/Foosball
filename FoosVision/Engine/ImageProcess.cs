@@ -27,12 +27,14 @@ namespace Engine
         {
             image = image.Erode(2);
 
+            long imageWidth = image.Width;
+            long imageHeight = image.Height;
             long totalMassX = 0;
             long totalMassY = 0;
             long totalMass = 1;
 
-            for (int x = 0; x < 1280; x += 1)
-                for (int y = 0; y < 720; y += 1)
+            for (int x = 0; x < imageWidth; x += 1)
+                for (int y = 0; y < imageHeight; y += 1)
                 {
                     if (image.Data[y, x, 0] > 0)
                     {
@@ -45,7 +47,10 @@ namespace Engine
             float comX = totalMassX / totalMass;
             float comY = totalMassY / totalMass;
 
-            return new PointF(comX, comY);
+            if (totalMass < 5)      // heuristically, this means too few pixels to come to a good conclusion
+                return new PointF(0, 0);
+            else
+                return new PointF(comX, comY);
         }
     }
 }
