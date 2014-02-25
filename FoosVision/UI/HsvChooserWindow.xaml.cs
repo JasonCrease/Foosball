@@ -31,19 +31,19 @@ namespace FoosVision
 
             InitializeComponent();
 
-            SliderHmin.Value = 21;
-            SliderHmax.Value = 89;
-            SliderSmin.Value = 33;
-            SliderSmax.Value = 135;
-            SliderVmin.Value = 42;
-            SliderVmax.Value = 201;
-
             SliderHmin.Value = 0;
             SliderHmax.Value = 23;
             SliderSmin.Value = 40;
             SliderSmax.Value = 143;
             SliderVmin.Value = 118;
             SliderVmax.Value = 256;
+
+            SliderHmin.Value = 21;
+            SliderHmax.Value = 89;
+            SliderSmin.Value = 33;
+            SliderSmax.Value = 135;
+            SliderVmin.Value = 42;
+            SliderVmax.Value = 201;
 
             RedrawTimer = new System.Threading.Timer(new System.Threading.TimerCallback(Redraw), null, 500, 5000);
 
@@ -77,11 +77,11 @@ namespace FoosVision
 
             var tableImage = new Image<Emgu.CV.Structure.Bgr, byte>(System.IO.Path.GetFullPath(".\\..\\Images\\pic8.jpg"));
 
-            Engine.TableFinder finder = new Engine.TableFinder();
-            var points = finder.GetTableCorners(tableImage);
-            OrigImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(finder.CannyImage);
+            //Engine.TableFinder finder = new Engine.TableFinder();
+            //var points = finder.GetTableCorners(tableImage);
+            //OrigImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(finder.ThresholdImage);
 
-            return;
+            //return;
 
             m_Engine = new Engine.Engine();
             m_Engine.TableImage = tableImage;
@@ -90,7 +90,7 @@ namespace FoosVision
                 (int)SliderHmin.Value, (int)SliderHmax.Value, 
                 (int)SliderSmin.Value, (int)SliderSmax.Value, 
                 (int)SliderVmin.Value, (int)SliderVmax.Value);
-            resultImage = resultImage.Erode(3);
+            resultImage = resultImage.Erode(0);
 
 
             OrigImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(resultImage);
