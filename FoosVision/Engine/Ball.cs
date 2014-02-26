@@ -17,10 +17,10 @@ namespace Engine
             m_KalmanFilter = new Kalman(4, 2, 0);
             m_KalmanFilter.CorrectedState = new Matrix<float>(new float[] { 0f, 0f, 0f, 0f });
             m_KalmanFilter.TransitionMatrix = new Matrix<float>(new float[,] { { 1f, 0, 1, 0 }, { 0, 1f, 0, 1 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } });
-            m_KalmanFilter.MeasurementNoiseCovariance = new Matrix<float>(new float[,] { { 0.0005f, 0 }, { 0, 0.0005f } });
+            m_KalmanFilter.MeasurementNoiseCovariance = new Matrix<float>(new float[,] { { 0.001f, 0 }, { 0, 0.001f } });
             m_KalmanFilter.ProcessNoiseCovariance = new Matrix<float>(new float[,] { { 0.001f, 0, 0, 0 }, { 0, 0.001f, 0, 0 }, { 0, 0, 0.001f, 0 }, { 0, 0, 0, 0.001f } });
             m_KalmanFilter.ErrorCovariancePost = new Matrix<float>(new float[,] { { 1f, 0, 0, 0 }, { 0, 1f, 0, 0 }, { 0, 0, 0f, 0 }, { 0, 0, 0, 1f } });
-            m_KalmanFilter.MeasurementMatrix = new Matrix<float>(new float[,] { { 1, 0, 0, 0 }, { 0, 1, 0, 0 } });
+            m_KalmanFilter.MeasurementMatrix = new Matrix<float>(new float[,] { { 1f, 0, 0, 0 }, { 0, 1f, 0, 0 } });
         }
 
         public PointF Pos;
@@ -30,24 +30,41 @@ namespace Engine
         internal void Update(Image<Bgr, byte> image)
         {
             Image<Gray, byte> threshImage;
+            bool pointObserved = false;
 
             // Try looking in local window
             if (Pos != Point.Empty)
             {
                 int x = Math.Max(1, (int)Pos.X - 40);
                 int y = Math.Max(1, (int)Pos.Y - 40);
-                int width = Math.Max(5, Math.Min(40, 720 - y - 1));
-                int height = Math.Max(5, Math.Min(40, 1280 - x - 1));
+                int width = 80;
+                int height = 80;
+
+                if (x < 0 || x + width > image.Width || y < 0 || y + height > image.Height
+                    || width < 1 || height < 1)
+                {
+                    goto notGoodSearch;
+                }
 
                 Image<Bgr, byte> searchWindow = image.GetSubRect(new Rectangle(x, y, width, height));
-                threshImage = ImageProcess.ThresholdHsv(image, 17, 32, 130, 256, 118, 256);
-                Pos = ImageProcess.GetCentreOfMass(threshImage);
+                threshImage = ImageProcess.ThresholdHsv(searchWindow, 17, 32, 130, 256, 118, 256);
+                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage);
+
+                if (searchPos != Point.Empty)
+                {
+                    pointObserved = true;
+                    Pos = new PointF(x + searchPos.X, y + searchPos.Y);
+                }
             }
 
-            if (Pos == Point.Empty) // If window fails to find point, then search the whole image
+            notGoodSearch:
+
+            if (Pos == Point.Empty || pointObserved == false) // If window fails to find point, then search the whole image
             {
                 threshImage = ImageProcess.ThresholdHsv(image, 17, 32, 130, 256, 118, 256);
-                Pos = ImageProcess.GetCentreOfMass(threshImage);
+                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage);
+                if (searchPos != Point.Empty)
+                    Pos = searchPos;
             }
 
             Matrix<float> prediction = m_KalmanFilter.Predict();
@@ -91,7 +108,7 @@ namespace Engine
 
             double answer = Math.Sqrt(Math.Pow(prevPoint.X - thisPoint.X, 2) + Math.Pow(prevPoint.Y - thisPoint.Y, 2)) * 0.029 * 2.2;
 
-            Speed = ((answer * 0.3) + (Speed * 0.7));
+            Speed = ((answer * 0.4) + (Speed * 0.6));
         }
 
         private int m_BallPosCount;
