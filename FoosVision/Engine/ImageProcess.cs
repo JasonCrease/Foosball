@@ -23,8 +23,6 @@ namespace Engine
 
         public static PointF GetCentreOfMass(Image<Gray, byte> image)
         {
-            image = image.Erode(3);
-
             long imageWidth = image.Width;
             long imageHeight = image.Height;
             long totalMassX = 0;

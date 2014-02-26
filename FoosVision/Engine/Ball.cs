@@ -48,7 +48,7 @@ namespace Engine
 
                 Image<Bgr, byte> searchWindow = image.GetSubRect(new Rectangle(x, y, width, height));
                 threshImage = ImageProcess.ThresholdHsv(searchWindow, 17, 32, 130, 256, 118, 256);
-                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage);
+                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(2));
 
                 if (searchPos != Point.Empty)
                 {
@@ -62,7 +62,7 @@ namespace Engine
             if (Pos == Point.Empty || pointObserved == false) // If window fails to find point, then search the whole image
             {
                 threshImage = ImageProcess.ThresholdHsv(image, 17, 32, 130, 256, 118, 256);
-                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage);
+                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(4).Dilate(2));
                 if (searchPos != Point.Empty)
                     Pos = searchPos;
             }
