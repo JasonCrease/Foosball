@@ -56,6 +56,7 @@
     <Compile Include="ImageProcess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Pitch.cs" />
+    <Compile Include="Stats.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -84,6 +84,7 @@ namespace SeeBoard
                             {
                                 vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(imageToShow); //.Resize(540, 960, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC));
                                 labelBallDescription.Content = m_Engine.Ball.ToString();
+                                labelPossessionSummary.Content = m_Engine.Stats.GetPossessionSummary();
                             }));
                         resized = null;
                         img = null;

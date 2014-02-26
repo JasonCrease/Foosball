@@ -14,6 +14,7 @@
         <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="1" >
             <Button Content="Go" Height="30" HorizontalAlignment="Left"  Name="button1" VerticalAlignment="Top" Width="75" Click="button1_Click" />
             <Label Content="Ball Description" Height="30" HorizontalAlignment="Left"  Name="labelBallDescription" VerticalAlignment="Top" Width="316" />
+            <Label Content="Possession" Height="30" HorizontalAlignment="Left"  Name="labelPossessionSummary" VerticalAlignment="Top" Width="316" />
         </StackPanel>
         <Image Height="540" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Name="vidImage" Stretch="Fill" VerticalAlignment="Top" Width="960" />
     </Grid>

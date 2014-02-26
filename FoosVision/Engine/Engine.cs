@@ -14,8 +14,10 @@ namespace Engine
         {
             m_Pitch = new Pitch();
             m_Ball = new Ball();
+            Stats = new Stats();
         }
 
+        public Stats Stats { get; private set; }
         private Pitch m_Pitch;
         private Ball m_Ball;
 
@@ -34,7 +36,7 @@ namespace Engine
             if (m_FrameNumber % 10 == 0)
                 m_Pitch.Update(tableImage);
             m_Ball.SetBallRealPosition(m_Pitch.WarpMatrix);
-
+            Stats.AddBall(m_Ball);
 
             // Drawing 
 
