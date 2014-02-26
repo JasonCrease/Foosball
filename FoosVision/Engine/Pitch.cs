@@ -91,9 +91,9 @@ namespace Engine
             PointF[] sourcePoints = { TopLeft, TopRight, BottomLeft, BottomRight };
             PointF[] destPoints = { 
                                       new PointF(border + instep, border), 
-                                      new PointF(pitchLength  + (border *2) - instep, border) ,
+                                      new PointF(pitchLength  + (border * 2) - instep, border) ,
                                       new PointF(border + instep, pitchHeight + (border * 2)), 
-                                      new PointF(pitchLength  + (border *2) - instep, pitchHeight + border * 2) };
+                                      new PointF(pitchLength  + (border * 2) - instep, pitchHeight + (border * 2)) };
 
             m_WarpMat = CameraCalibration.GetPerspectiveTransform(sourcePoints, destPoints);
         }
@@ -101,13 +101,12 @@ namespace Engine
 
         private void FindPitchCorners(Image<Bgr, byte> nowImage)
         {
-
             int scale = 2;
             int offset = 4;
             DownImage = nowImage.Convert<Bgr, Byte>().PyrDown();
-            ThresholdImage = ImageProcess.ThresholdHsv(DownImage, 22, 89, 33, 135, 20, 201);  // For green
-            ThresholdImage = ThresholdImage.Erode(1);
-            ThresholdImage = ThresholdImage.Dilate(1);
+            ThresholdImage = ImageProcess.ThresholdHsv(DownImage, 22, 89, 33, 135, 50, 201);  // For green
+            ThresholdImage = ThresholdImage.Erode(4);
+            ThresholdImage = ThresholdImage.Dilate(4);
 
             TopLeft = PointF.Empty;
             TopRight = PointF.Empty;
