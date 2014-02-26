@@ -83,8 +83,17 @@ namespace Engine
             //    m_OldTRPoint = TopRight;
             //}
 
-            PointF[] sourcePoints = { BottomLeft, BottomRight, TopLeft, TopRight };
-            PointF[] destPoints = { new PointF(300, 700), new PointF(900, 700), new PointF(300, 100), new PointF(900, 100) };
+            float border = 30;
+            float pitchLength = 1205;
+            float instep = 166;
+            float pitchHeight = 705;
+
+            PointF[] sourcePoints = { TopLeft, TopRight, BottomLeft, BottomRight };
+            PointF[] destPoints = { 
+                                      new PointF(border + instep, border), 
+                                      new PointF(pitchLength  + (border *2) - instep, border) ,
+                                      new PointF(border + instep, pitchHeight + (border * 2)), 
+                                      new PointF(pitchLength  + (border *2) - instep, pitchHeight + border * 2) };
 
             m_WarpMat = CameraCalibration.GetPerspectiveTransform(sourcePoints, destPoints);
         }
