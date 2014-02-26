@@ -17,7 +17,7 @@ namespace Engine
             m_KalmanFilter = new Kalman(4, 2, 0);
             m_KalmanFilter.CorrectedState = new Matrix<float>(new float[] { 0f, 0f, 0f, 0f });
             m_KalmanFilter.TransitionMatrix = new Matrix<float>(new float[,] { { 1f, 0, 1, 0 }, { 0, 1f, 0, 1 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } });
-            m_KalmanFilter.MeasurementNoiseCovariance = new Matrix<float>(new float[,] { { 0.002f, 0 }, { 0, 0.002f } });
+            m_KalmanFilter.MeasurementNoiseCovariance = new Matrix<float>(new float[,] { { 0.0005f, 0 }, { 0, 0.0005f } });
             m_KalmanFilter.ProcessNoiseCovariance = new Matrix<float>(new float[,] { { 0.001f, 0, 0, 0 }, { 0, 0.001f, 0, 0 }, { 0, 0, 0.001f, 0 }, { 0, 0, 0, 0.001f } });
             m_KalmanFilter.ErrorCovariancePost = new Matrix<float>(new float[,] { { 1f, 0, 0, 0 }, { 0, 1f, 0, 0 }, { 0, 0, 0f, 0 }, { 0, 0, 0, 1f } });
             m_KalmanFilter.MeasurementMatrix = new Matrix<float>(new float[,] { { 1, 0, 0, 0 }, { 0, 1, 0, 0 } });
@@ -68,7 +68,7 @@ namespace Engine
             if (Pos.X > 1279) Pos.X = 1279;
             if (Pos.Y > 719) Pos.Y = 719;
 
-            AddPosition(Pos);
+            AddPosition(RelPos);
         }
 
 
@@ -89,14 +89,28 @@ namespace Engine
             PointF prevPoint = m_PreviousBallPositions[m_BallPosCount - 2];
             PointF thisPoint = m_PreviousBallPositions[m_BallPosCount - 1];
 
-            double answer = Math.Sqrt(Math.Pow(prevPoint.X - thisPoint.X, 2) + Math.Pow(prevPoint.Y - thisPoint.Y, 2));
+            double answer = Math.Sqrt(Math.Pow(prevPoint.X - thisPoint.X, 2) + Math.Pow(prevPoint.Y - thisPoint.Y, 2)) * 0.029 * 2.2;
 
-            Speed = Math.Min(answer, 100f);
+
+            Speed = ((answer * 0.2) + (Speed * 0.8));
         }
 
         private int m_BallPosCount;
         private List<PointF> m_PreviousBallPositions;
         private Kalman m_KalmanFilter;
+
+        internal void SetBallRealPosition(HomographyMatrix warpMatrix)
+        {
+            PointF[] pointArray = new PointF[1];
+            pointArray[0] = this.Pos;
+            warpMatrix.ProjectPoints(pointArray);
+            this.RelPos = pointArray[0];
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Speed {0}mph at ({1}, {2})", Speed.ToString("#.#"), RelPos.X.ToString("###"), RelPos.Y.ToString("###"));
+        }
     }
 
 }
