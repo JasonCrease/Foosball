@@ -47,7 +47,7 @@ namespace Engine
             float comX = totalMassX / totalMass;
             float comY = totalMassY / totalMass;
 
-            if (totalMass < 5)      // heuristically, this means too few pixels to come to a good conclusion
+            if (totalMass < 3)      // heuristically, this means too few pixels to come to a good conclusion
                 return new PointF(0, 0);
             else
                 return new PointF(comX, comY);
