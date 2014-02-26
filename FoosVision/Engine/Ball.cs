@@ -24,7 +24,7 @@ namespace Engine
         }
 
         public PointF Pos;
-        public PointF RelPos { get; private set; }
+        public PointF RelPos;
         public double Speed { get; private set; }
 
         internal void Update(Image<Bgr, byte> image)
@@ -91,8 +91,7 @@ namespace Engine
 
             double answer = Math.Sqrt(Math.Pow(prevPoint.X - thisPoint.X, 2) + Math.Pow(prevPoint.Y - thisPoint.Y, 2)) * 0.029 * 2.2;
 
-
-            Speed = ((answer * 0.2) + (Speed * 0.8));
+            Speed = ((answer * 0.3) + (Speed * 0.7));
         }
 
         private int m_BallPosCount;
@@ -105,6 +104,11 @@ namespace Engine
             pointArray[0] = this.Pos;
             warpMatrix.ProjectPoints(pointArray);
             this.RelPos = pointArray[0];
+
+            if (this.RelPos.X < -50) RelPos.X = -50;
+            if (this.RelPos.X > 1255) RelPos.X = 1255;
+            if (this.RelPos.Y < 0) RelPos.Y = 0;
+            if (this.RelPos.Y > 705) RelPos.Y = 705;
         }
 
         public override string ToString()
