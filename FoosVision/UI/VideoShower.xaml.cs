@@ -14,7 +14,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using System.Threading;
 
-namespace SeeBoard
+namespace UI
 {
     /// <summary>
     /// Interaction logic for VideoShower.xaml
@@ -30,7 +30,6 @@ namespace SeeBoard
 
         Capture m_Capture;
         Engine.Engine m_Engine;
-        object frameLock = new object();
 
         int m_ExpectedFrame = 0;
         int m_ActualFrame = 0;
@@ -112,8 +111,8 @@ namespace SeeBoard
         {
             m_Playing = true;
             m_Engine = new Engine.Engine();
-            m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vid5.mp4"));
-            m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 29);
+            m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vid6.mp4"));
+            m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 15);
             m_DisplayFrames = new Thread(ShowFrames);
             m_DisplayFrames.Start();
         }

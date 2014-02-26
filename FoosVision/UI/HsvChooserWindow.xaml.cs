@@ -14,7 +14,7 @@ using System.Windows.Shapes;
 using System.Runtime.InteropServices;
 using Emgu.CV;
 
-namespace FoosVision
+namespace UI
 {
     /// <summary>
     /// Interaction logic for MaiHsvChooserWindownWindow.xaml
