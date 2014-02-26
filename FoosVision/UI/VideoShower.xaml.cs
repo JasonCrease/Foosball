@@ -82,8 +82,8 @@ namespace SeeBoard
 
                         Dispatcher.Invoke(new Action(() =>
                             {
-                                vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(imageToShow);
-                                labelBallSpeed.Content = m_Engine.Ball.Speed.ToString("#.##");
+                                vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(imageToShow); //.Resize(540, 960, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC));
+                                labelBallDescription.Content = m_Engine.Ball.ToString();
                             }));
                         resized = null;
                         img = null;
