@@ -35,10 +35,12 @@ namespace Engine
             // Try looking in local window
             if (Pos != Point.Empty)
             {
-                int x = Math.Max(1, (int)Pos.X - 40);
-                int y = Math.Max(1, (int)Pos.Y - 40);
-                int width = 80;
-                int height = 80;
+                int width = 120;
+                int height = 60;
+                int x = Math.Max(1, (int)Pos.X - (width / 2));
+                int y = Math.Max(1, (int)Pos.Y - (height / 2));
+                if (x +width > image.Width) width = image.Width - x-1;
+                if (y + height > image.Height ) height = image.Height - y-1;
 
                 if (x < 0 || x + width > image.Width || y < 0 || y + height > image.Height
                     || width < 1 || height < 1)
@@ -47,8 +49,8 @@ namespace Engine
                 }
 
                 Image<Bgr, byte> searchWindow = image.GetSubRect(new Rectangle(x, y, width, height));
-                threshImage = ImageProcess.ThresholdHsv(searchWindow, 17, 32, 130, 256, 118, 256);
-                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(2));
+                threshImage = ImageProcess.ThresholdHsv(searchWindow, 14, 37, 150, 256, 98, 256);
+                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(1).Dilate(1).Erode(1), 4);
 
                 if (searchPos != Point.Empty)
                 {
@@ -61,16 +63,19 @@ namespace Engine
 
             if (Pos == Point.Empty || pointObserved == false) // If window fails to find point, then search the whole image
             {
-                threshImage = ImageProcess.ThresholdHsv(image, 17, 32, 130, 256, 118, 256);
-                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(4).Dilate(2));
+                threshImage = ImageProcess.ThresholdHsv(image, 17, 34, 150, 256, 98, 256);
+                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(2).Dilate(1).Erode(1), 6);
                 if (searchPos != Point.Empty)
+                {
+                    pointObserved = true;
                     Pos = searchPos;
+                }
             }
 
             Matrix<float> prediction = m_KalmanFilter.Predict();
             Matrix<float> measured = new Matrix<float>(new float[,] { { Pos.X }, { Pos.Y } });
 
-            if (Pos != Point.Empty)
+            if (pointObserved)
             {
                 Matrix<float> estimated = m_KalmanFilter.Correct(measured);
                 Pos = new PointF(estimated[0, 0], estimated[1, 0]);

@@ -10,7 +10,7 @@ namespace Engine
 {
     public class ImageProcess
     {
-        public static Image<Gray, byte> ThresholdHsv(Image<Bgr, Byte> image, int hmin, int hmax, int smin, int smax, int vmin, int vmax)
+        public static Image<Gray, byte> ThresholdHsv(Image<Bgr, Byte> image,  int hmin, int hmax, int smin, int smax, int vmin, int vmax)
         {
             Image<Hsv, Byte> hsvImg = image.Convert<Hsv, Byte>();
             Image<Gray, Byte>[] channels = hsvImg.Split();
@@ -21,13 +21,13 @@ namespace Engine
             return channels[0].And(channels[1]).And(channels[2]);
         }
 
-        public static PointF GetCentreOfMass(Image<Gray, byte> image)
+        public static PointF GetCentreOfMass(Image<Gray, byte> image, int boundary)
         {
-            long imageWidth = image.Width;
-            long imageHeight = image.Height;
-            long totalMassX = 0;
-            long totalMassY = 0;
-            long totalMass = 0;
+            int imageWidth = image.Width;
+            int imageHeight = image.Height;
+            int totalMassX = 0;
+            int totalMassY = 0;
+            int totalMass = 0;
 
             for (int x = 0; x < imageWidth; x += 1)
                 for (int y = 0; y < imageHeight; y += 1)
@@ -40,7 +40,7 @@ namespace Engine
                     }
                 }
 
-            if (totalMass < 3)          // heuristically, this means too few pixels to come to a good conclusion
+            if (totalMass < boundary)          // heuristically, this means too few pixels to come to a good conclusion
                 return PointF.Empty;
 
             float comX = totalMassX / totalMass;
