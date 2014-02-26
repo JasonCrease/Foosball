@@ -3,8 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="VideoShower" Height="800" Width="1320">
     <Grid>
-        <Button Content="Button" Height="23" HorizontalAlignment="Left" Margin="12,12,0,0" Name="button1" VerticalAlignment="Top" Width="75" Click="button1_Click" />
-        <Image Height="720" HorizontalAlignment="Left" Margin="12,41,0,0" Name="vidImage" Stretch="Fill" VerticalAlignment="Top" Width="1280" />
-        <Label Content="0.0" Height="23" HorizontalAlignment="Left" Margin="107,12,0,0" Name="labelBallSpeed" VerticalAlignment="Top" Width="121" />
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="970"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Orientation="Vertical" Grid.Row="0" Grid.Column="1" >
+            <Button Content="Go" Height="30" HorizontalAlignment="Left"  Name="button1" VerticalAlignment="Top" Width="75" Click="button1_Click" />
+            <Label Content="Ball Description" Height="30" HorizontalAlignment="Left"  Name="labelBallDescription" VerticalAlignment="Top" Width="316" />
+        </StackPanel>
+        <Image Height="540" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Name="vidImage" Stretch="Fill" VerticalAlignment="Top" Width="960" />
     </Grid>
 </Window>
