@@ -41,12 +41,12 @@ namespace Engine
             // Drawing 
 
             if (m_Ball.Pos.X > 0 && m_Ball.Pos.Y > 0 && m_Ball.Pos.X < tableImage.Width && m_Ball.Pos.Y < tableImage.Height)
-                DebugImage.Draw(new CircleF(m_Ball.Pos, 12), new Bgr(Color.MediumBlue), 5);
+                DebugImage.Draw(new CircleF(m_Ball.Pos, 5), new Bgr(Color.MediumBlue), 2);
 
-            DebugImage.Draw(new CircleF(m_Pitch.TopLeft, 12), new Bgr(0, 0, 200), 4);
-            DebugImage.Draw(new CircleF(m_Pitch.TopRight, 12), new Bgr(0, 100, 200), 4);
-            DebugImage.Draw(new CircleF(m_Pitch.BottomLeft, 12), new Bgr(100, 0, 200), 4);
-            DebugImage.Draw(new CircleF(m_Pitch.BottomRight, 12), new Bgr(0, 200, 200), 4);
+            DebugImage.Draw(new CircleF(m_Pitch.TopLeft, 7), new Bgr(50, 0, 200), 2);
+            DebugImage.Draw(new CircleF(m_Pitch.TopRight, 7), new Bgr(50, 0, 200), 2);
+            DebugImage.Draw(new CircleF(m_Pitch.BottomLeft, 7), new Bgr(50, 0, 200), 2);
+            DebugImage.Draw(new CircleF(m_Pitch.BottomRight, 7), new Bgr(50, 0, 200), 2);
 
             //DebugImage = DebugImage.WarpPerspective(m_Pitch.WarpMatrix, 1205, 800,
             //    Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC,
