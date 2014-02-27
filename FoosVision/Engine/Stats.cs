@@ -52,6 +52,25 @@ namespace Engine
         {
             return ballDescs.Max(x => x.Speed);
         }
+
+        public string GetRecentHighestSpeedDesc()
+        {
+            int count = ballDescs.Count();
+            double highestSpeed = 0f;
+            int period = 60;
+
+            if (count > period)
+                highestSpeed = ballDescs.Skip(count - period - 1).Take(period).Max(x => x.Speed);
+            else if (count > 0)
+                highestSpeed = ballDescs.Max(x => x.Speed);
+            else
+                highestSpeed = 0f;
+
+            if (highestSpeed > 1f)
+                return string.Format("{0} mph", highestSpeed.ToString("#.#"));
+            else
+                return "Nothing interesting";
+        }
     }
 
     public class BallDesc

@@ -18,7 +18,7 @@ namespace Engine
             m_KalmanFilter.CorrectedState = new Matrix<float>(new float[] { 0f, 0f, 0f, 0f });
             m_KalmanFilter.TransitionMatrix = new Matrix<float>(new float[,] { { 1f, 0, 1, 0 }, { 0, 1f, 0, 1 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } });
             m_KalmanFilter.MeasurementNoiseCovariance = new Matrix<float>(new float[,] { { 0.001f, 0 }, { 0, 0.001f } });
-            m_KalmanFilter.ProcessNoiseCovariance = new Matrix<float>(new float[,] { { 0.001f, 0, 0, 0 }, { 0, 0.001f, 0, 0 }, { 0, 0, 0.001f, 0 }, { 0, 0, 0, 0.001f } });
+            m_KalmanFilter.ProcessNoiseCovariance = new Matrix<float>(new float[,] { { 0.0001f, 0, 0, 0 }, { 0, 0.0001f, 0, 0 }, { 0, 0, 0.0001f, 0 }, { 0, 0, 0, 0.0001f } });
             m_KalmanFilter.ErrorCovariancePost = new Matrix<float>(new float[,] { { 1f, 0, 0, 0 }, { 0, 1f, 0, 0 }, { 0, 0, 0f, 0 }, { 0, 0, 0, 1f } });
             m_KalmanFilter.MeasurementMatrix = new Matrix<float>(new float[,] { { 1f, 0, 0, 0 }, { 0, 1f, 0, 0 } });
         }
@@ -35,10 +35,12 @@ namespace Engine
             // Try looking in local window
             if (Pos != Point.Empty)
             {
-                int x = Math.Max(1, (int)Pos.X - 40);
-                int y = Math.Max(1, (int)Pos.Y - 40);
-                int width = 80;
-                int height = 80;
+                int width = 120;
+                int height = 60;
+                int x = Math.Max(1, (int)Pos.X - (width / 2));
+                int y = Math.Max(1, (int)Pos.Y - (height / 2));
+                if (x +width > image.Width) width = image.Width - x-1;
+                if (y + height > image.Height ) height = image.Height - y-1;
 
                 if (x < 0 || x + width > image.Width || y < 0 || y + height > image.Height
                     || width < 1 || height < 1)
@@ -47,8 +49,8 @@ namespace Engine
                 }
 
                 Image<Bgr, byte> searchWindow = image.GetSubRect(new Rectangle(x, y, width, height));
-                threshImage = ImageProcess.ThresholdHsv(searchWindow, 17, 32, 130, 256, 118, 256);
-                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(2));
+                threshImage = ImageProcess.ThresholdHsv(searchWindow, 14, 37, 150, 256, 98, 256);
+                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(1).Dilate(1).Erode(1), 4);
 
                 if (searchPos != Point.Empty)
                 {
@@ -61,16 +63,19 @@ namespace Engine
 
             if (Pos == Point.Empty || pointObserved == false) // If window fails to find point, then search the whole image
             {
-                threshImage = ImageProcess.ThresholdHsv(image, 17, 32, 130, 256, 118, 256);
-                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(4).Dilate(2));
+                threshImage = ImageProcess.ThresholdHsv(image, 17, 34, 150, 256, 98, 256);
+                PointF searchPos = ImageProcess.GetCentreOfMass(threshImage.Erode(2).Dilate(1).Erode(1), 6);
                 if (searchPos != Point.Empty)
+                {
+                    pointObserved = true;
                     Pos = searchPos;
+                }
             }
 
             Matrix<float> prediction = m_KalmanFilter.Predict();
             Matrix<float> measured = new Matrix<float>(new float[,] { { Pos.X }, { Pos.Y } });
 
-            if (Pos != Point.Empty)
+            if (pointObserved)
             {
                 Matrix<float> estimated = m_KalmanFilter.Correct(measured);
                 Pos = new PointF(estimated[0, 0], estimated[1, 0]);
@@ -84,8 +89,6 @@ namespace Engine
             if (Pos.Y < 1) Pos.Y = 1;
             if (Pos.X > 1279) Pos.X = 1279;
             if (Pos.Y > 719) Pos.Y = 719;
-
-            AddPosition(RelPos);
         }
 
 
@@ -100,6 +103,7 @@ namespace Engine
             if (m_BallPosCount > 2)
                 SetBallSpeed();
         }
+
 
         private void SetBallSpeed()
         {
@@ -123,10 +127,18 @@ namespace Engine
             this.RelPos = pointArray[0];
 
             if (this.RelPos.X < -50) RelPos.X = -50;
-            if (this.RelPos.X > 1255) RelPos.X = 1255;
+            if (this.RelPos.X > Pitch.PitchWidth + 50) RelPos.X = Pitch.PitchWidth + 50;
             if (this.RelPos.Y < 0) RelPos.Y = 0;
-            if (this.RelPos.Y > 705) RelPos.Y = 705;
+            if (this.RelPos.Y > Pitch.PitchHeight + 50) RelPos.Y = Pitch.PitchHeight + 50;
+
+            if (RelPosIsOnTable())
+                AddPosition(RelPos);
         }
+        private bool RelPosIsOnTable()
+        {
+            return (RelPos.X > 0 && RelPos.X < Pitch.PitchWidth && RelPos.Y > 0 && RelPos.Y < Pitch.PitchHeight);
+        }
+
 
         public override string ToString()
         {
