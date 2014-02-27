@@ -59,8 +59,6 @@ namespace Engine
 
         public void Update(Image<Bgr, byte> nowImage)
         {
-            FindPitchCorners(nowImage);
-
             //if (m_OldTLPoint == Point.Empty)    
             //{
             //    m_OldBLPoint = BottomLeft;
@@ -89,6 +87,13 @@ namespace Engine
             float border = 30;
             float instep = 166;
 
+            ImageProcess.PitchEdges(nowImage);
+
+            TopLeft = ImageProcess.GetTopLeft();
+            TopRight = ImageProcess.GetTopRight();
+            BottomLeft = ImageProcess.GetBottomLeft();
+            BottomRight = ImageProcess.GetBottomRight();
+
             PointF[] sourcePoints = { TopLeft, TopRight, BottomLeft, BottomRight };
             PointF[] destPoints = { 
                                       new PointF(border + instep, border), 
@@ -97,80 +102,6 @@ namespace Engine
                                       new PointF(PitchWidth  + (border * 2) - instep, PitchHeight + (border * 2)) };
 
             m_WarpMat = CameraCalibration.GetPerspectiveTransform(sourcePoints, destPoints);
-        }
-
-
-        private void FindPitchCorners(Image<Bgr, byte> nowImage)
-        {
-            int scale = 2;
-            int offset = 4;
-            DownImage = nowImage.Convert<Bgr, Byte>().PyrDown();
-            ThresholdImage = ImageProcess.ThresholdHsv(DownImage, 22, 89, 33, 135, 50, 201);  // For green
-            ThresholdImage = ThresholdImage.Erode(4);
-            ThresholdImage = ThresholdImage.Dilate(4);
-
-            TopLeft = PointF.Empty;
-            TopRight = PointF.Empty;
-            BottomLeft = PointF.Empty;
-            BottomRight = PointF.Empty;
-
-            int ThresholdImageWidth = ThresholdImage.Width;
-            int ThresholdImageHeight = ThresholdImage.Height;
-
-            int widthOver2 = ThresholdImage.Width / 2;
-            int heightOver2 = ThresholdImage.Height / 2;
-
-            for (int startY = 0; startY < ThresholdImageHeight; startY++)
-                for (int x = 0; x < startY; x++)
-                {
-                    int y = startY - x;
-                    if (ThresholdImage.Data[y, x, 0] > 0)
-                    {
-                        TopLeft = new PointF((x + offset) * scale, (y - offset) * scale);
-                        goto next1;
-                    }
-                }
-            next1:
-
-            for (int startY = 0; startY < ThresholdImageHeight; startY++)
-                for (int x = 0; x < startY; x++)
-                {
-                    int y = startY - x;
-                    int x2 = ThresholdImageWidth - x - 1;
-                    if (ThresholdImage.Data[y, x2, 0] > 0)
-                    {
-                        TopRight = new PointF((x2 - offset) * scale, (y - offset) * scale);
-                        goto next2;
-                    }
-                }
-            next2:
-
-            for (int startY = 0; startY < ThresholdImageHeight; startY++)
-                for (int x = 0; x < startY; x++)
-                {
-                    int y = ThresholdImageHeight - (startY - x) - 1;
-                    if (ThresholdImage.Data[y, x, 0] > 0)
-                    {
-                        BottomLeft = new PointF((x + offset) * scale, (y + offset) * scale);
-                        goto next3;
-                    }
-                }
-            next3:
-
-            for (int startY = 0; startY < ThresholdImageHeight; startY++)
-                for (int x = 0; x < startY; x++)
-                {
-                    int y = ThresholdImageHeight - (startY - x) - 1;
-                    int x2 = ThresholdImageWidth - x - 1;
-                    if (ThresholdImage.Data[y, x2, 0] > 0)
-                    {
-                        BottomRight = new PointF((x2 - offset) * scale, (y + offset) * scale);
-                        goto next4;
-                    }
-                }
-        next4:
-
-            ;
         }
     }
 }
