@@ -18,7 +18,7 @@ namespace Engine
             m_KalmanFilter.CorrectedState = new Matrix<float>(new float[] { 0f, 0f, 0f, 0f });
             m_KalmanFilter.TransitionMatrix = new Matrix<float>(new float[,] { { 1f, 0, 1, 0 }, { 0, 1f, 0, 1 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } });
             m_KalmanFilter.MeasurementNoiseCovariance = new Matrix<float>(new float[,] { { 0.001f, 0 }, { 0, 0.001f } });
-            m_KalmanFilter.ProcessNoiseCovariance = new Matrix<float>(new float[,] { { 0.001f, 0, 0, 0 }, { 0, 0.001f, 0, 0 }, { 0, 0, 0.001f, 0 }, { 0, 0, 0, 0.001f } });
+            m_KalmanFilter.ProcessNoiseCovariance = new Matrix<float>(new float[,] { { 0.0001f, 0, 0, 0 }, { 0, 0.0001f, 0, 0 }, { 0, 0, 0.0001f, 0 }, { 0, 0, 0, 0.0001f } });
             m_KalmanFilter.ErrorCovariancePost = new Matrix<float>(new float[,] { { 1f, 0, 0, 0 }, { 0, 1f, 0, 0 }, { 0, 0, 0f, 0 }, { 0, 0, 0, 1f } });
             m_KalmanFilter.MeasurementMatrix = new Matrix<float>(new float[,] { { 1f, 0, 0, 0 }, { 0, 1f, 0, 0 } });
         }
@@ -89,8 +89,6 @@ namespace Engine
             if (Pos.Y < 1) Pos.Y = 1;
             if (Pos.X > 1279) Pos.X = 1279;
             if (Pos.Y > 719) Pos.Y = 719;
-
-            AddPosition(RelPos);
         }
 
 
@@ -105,6 +103,7 @@ namespace Engine
             if (m_BallPosCount > 2)
                 SetBallSpeed();
         }
+
 
         private void SetBallSpeed()
         {
@@ -128,10 +127,18 @@ namespace Engine
             this.RelPos = pointArray[0];
 
             if (this.RelPos.X < -50) RelPos.X = -50;
-            if (this.RelPos.X > 1255) RelPos.X = 1255;
+            if (this.RelPos.X > Pitch.PitchWidth + 50) RelPos.X = Pitch.PitchWidth + 50;
             if (this.RelPos.Y < 0) RelPos.Y = 0;
-            if (this.RelPos.Y > 705) RelPos.Y = 705;
+            if (this.RelPos.Y > Pitch.PitchHeight + 50) RelPos.Y = Pitch.PitchHeight + 50;
+
+            if (RelPosIsOnTable())
+                AddPosition(RelPos);
         }
+        private bool RelPosIsOnTable()
+        {
+            return (RelPos.X > 0 && RelPos.X < Pitch.PitchWidth && RelPos.Y > 0 && RelPos.Y < Pitch.PitchHeight);
+        }
+
 
         public override string ToString()
         {

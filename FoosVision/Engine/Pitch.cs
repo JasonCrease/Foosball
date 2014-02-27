@@ -10,6 +10,9 @@ namespace Engine
 {
     public class Pitch
     {
+        public const float PitchWidth = 1205;
+        public const float PitchHeight = 705;
+
         public Image<Bgr, Byte> DownImage
         {
             get;
@@ -84,16 +87,14 @@ namespace Engine
             //}
 
             float border = 30;
-            float pitchLength = 1205;
             float instep = 166;
-            float pitchHeight = 705;
 
             PointF[] sourcePoints = { TopLeft, TopRight, BottomLeft, BottomRight };
             PointF[] destPoints = { 
                                       new PointF(border + instep, border), 
-                                      new PointF(pitchLength  + (border * 2) - instep, border) ,
-                                      new PointF(border + instep, pitchHeight + (border * 2)), 
-                                      new PointF(pitchLength  + (border * 2) - instep, pitchHeight + (border * 2)) };
+                                      new PointF(PitchWidth  + (border * 2) - instep, border) ,
+                                      new PointF(border + instep, PitchHeight + (border * 2)), 
+                                      new PointF(PitchWidth  + (border * 2) - instep, PitchHeight + (border * 2)) };
 
             m_WarpMat = CameraCalibration.GetPerspectiveTransform(sourcePoints, destPoints);
         }
