@@ -61,8 +61,10 @@ namespace Engine
 
             if (count > period)
                 highestSpeed = ballDescs.Skip(count - period - 1).Take(period).Max(x => x.Speed);
-            else
+            else if (count > 0)
                 highestSpeed = ballDescs.Max(x => x.Speed);
+            else
+                highestSpeed = 0f;
 
             if (highestSpeed > 1f)
                 return string.Format("{0} mph", highestSpeed.ToString("#.#"));
