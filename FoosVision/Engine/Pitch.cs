@@ -12,6 +12,8 @@ namespace Engine
     {
         public const float PitchWidth = 1205;
         public const float PitchHeight = 705;
+        public const float Border = 30;
+        public const float Instep = 166;
 
         public Image<Bgr, Byte> DownImage
         {
@@ -44,64 +46,89 @@ namespace Engine
             private set;
         }
 
-        public PointF TopLeft;
-        public PointF TopRight;
-        public PointF BottomLeft;
-        public PointF BottomRight;
-
-        private PointF m_OldTLPoint = PointF.Empty;
-        private PointF m_OldTRPoint = PointF.Empty;
-        private PointF m_OldBLPoint = PointF.Empty;
-        private PointF m_OldBRPoint = PointF.Empty;
+        public PointF TopLeft = PointF.Empty;
+        public PointF TopRight = PointF.Empty;
+        public PointF BottomLeft = PointF.Empty;
+        public PointF BottomRight = PointF.Empty;
 
         public HomographyMatrix WarpMatrix { get { return m_WarpMat; } }
         private HomographyMatrix m_WarpMat;
 
         public void Update(Image<Bgr, byte> nowImage)
         {
-            //if (m_OldTLPoint == Point.Empty)    
-            //{
-            //    m_OldBLPoint = BottomLeft;
-            //    m_OldBRPoint = BottomRight;
-            //    m_OldTLPoint = TopLeft;
-            //    m_OldTRPoint = TopRight;
-            //}
-            //else
-            //{
-            //    const float rate = 0.2f;
-            //    BottomLeft.X = (BottomLeft.X * rate) + (m_OldBLPoint.X * (1 - rate));
-            //    BottomLeft.Y = (BottomLeft.Y * rate) + (m_OldBLPoint.Y * (1 - rate));
-            //    BottomRight.X = (BottomRight.X * rate) + (m_OldBRPoint.X * (1 - rate));
-            //    BottomRight.Y = (BottomRight.Y * rate) + (m_OldBRPoint.Y * (1 - rate));
-            //    TopLeft.X = (TopLeft.X * rate) + (m_OldTLPoint.X * (1 - rate));
-            //    TopLeft.Y = (TopLeft.Y * rate) + (m_OldTLPoint.Y * (1 - rate));
-            //    TopRight.X = (TopRight.X * rate) + (m_OldTRPoint.X * (1 - rate));
-            //    TopRight.Y = (TopRight.Y * rate) + (m_OldTRPoint.Y * (1 - rate));
+            DerivePitchEdges(nowImage);
 
-            //    m_OldBLPoint = BottomLeft;
-            //    m_OldBRPoint = BottomRight;
-            //    m_OldTLPoint = TopLeft;
-            //    m_OldTRPoint = TopRight;
-            //}
-
-            float border = 30;
-            float instep = 166;
-
-            ImageProcess.PitchEdges(nowImage);
-
-            TopLeft = ImageProcess.GetTopLeft();
-            TopRight = ImageProcess.GetTopRight();
-            BottomLeft = ImageProcess.GetBottomLeft();
-            BottomRight = ImageProcess.GetBottomRight();
+            TopLeft = GetTopLeft();
+            TopRight = GetTopRight();
+            BottomLeft = GetBottomLeft();
+            BottomRight = GetBottomRight();
 
             PointF[] sourcePoints = { TopLeft, TopRight, BottomLeft, BottomRight };
             PointF[] destPoints = { 
-                                      new PointF(border + instep, border), 
-                                      new PointF(PitchWidth  + (border * 2) - instep, border) ,
-                                      new PointF(border + instep, PitchHeight + (border * 2)), 
-                                      new PointF(PitchWidth  + (border * 2) - instep, PitchHeight + (border * 2)) };
+                                      new PointF(Border + Instep, Border), 
+                                      new PointF(PitchWidth  + (Border * 2) - Instep, Border) ,
+                                      new PointF(Border + Instep, PitchHeight + (Border * 2)), 
+                                      new PointF(PitchWidth  + (Border * 2) - Instep, PitchHeight + (Border * 2)) };
 
             m_WarpMat = CameraCalibration.GetPerspectiveTransform(sourcePoints, destPoints);
+        }
+
+        private Queue<LineSegment2D> m_TopBorderCandidateLines = new Queue<LineSegment2D>();
+        private Queue<LineSegment2D> m_BottomBorderCandidates = new Queue<LineSegment2D>();
+
+        private void DerivePitchEdges(Image<Bgr, Byte> image)
+        {
+            Image<Bgr, byte> imageMasked = image.Copy(ImageProcess.ThresholdHsv(image, 22, 89, 33, 240, 40, 240));
+
+            Image<Gray, byte> imageCanny = imageMasked.Canny(170, 130);
+
+            var lines = imageCanny.HoughLinesBinary(1, Math.PI / 360, 30, 200, 50)[0];
+
+            //Image<Bgr, byte> retImage = imageCanny.Convert<Bgr, byte>();
+
+            foreach (var line in lines)
+            {
+                float dirY = line.Direction.Y;
+
+                if (line.Length > 500 && dirY < 0.3 && dirY > -0.3f)
+                {
+                    if (line.P1.Y < image.Height / 2 && line.P2.Y < image.Height / 2)
+                    {
+                        m_TopBorderCandidateLines.Enqueue(line);
+                        if(m_TopBorderCandidateLines.Count > 20)
+                            m_TopBorderCandidateLines.Dequeue();
+                        //retImage.Draw(line, new Bgr(Color.Red), 2);
+                    }
+                    else if (line.P1.Y > image.Height / 2 && line.P2.Y > image.Height / 2)
+                    {
+                        m_BottomBorderCandidates.Enqueue(line);
+                        if (m_BottomBorderCandidates.Count > 20)
+                            m_BottomBorderCandidates.Dequeue();
+                        //retImage.Draw(line, new Bgr(Color.YellowGreen), 2);
+                    }
+                }
+            }
+        }
+
+        private PointF GetTopLeft()
+        {
+            if (m_TopBorderCandidateLines.Count == 0) return PointF.Empty;
+            return new PointF((float)m_TopBorderCandidateLines.Average(x => x.P1.X), (float)m_TopBorderCandidateLines.Average(x => x.P1.Y));
+        }
+        private PointF GetTopRight()
+        {
+            if (m_TopBorderCandidateLines.Count == 0) return PointF.Empty;
+            return new PointF((float)m_TopBorderCandidateLines.Average(x => x.P2.X), (float)m_TopBorderCandidateLines.Average(x => x.P2.Y));
+        }
+        private PointF GetBottomLeft()
+        {
+            if (m_BottomBorderCandidates.Count == 0) return PointF.Empty;
+            return new PointF((float)m_BottomBorderCandidates.Average(x => x.P1.X), (float)m_BottomBorderCandidates.Average(x => x.P1.Y));
+        }
+        private PointF GetBottomRight()
+        {
+            if (m_BottomBorderCandidates.Count == 0) return PointF.Empty;
+            return new PointF((float)m_BottomBorderCandidates.Average(x => x.P2.X), (float)m_BottomBorderCandidates.Average(x => x.P2.Y));
         }
     }
 }
