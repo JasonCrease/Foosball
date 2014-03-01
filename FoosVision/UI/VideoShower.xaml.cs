@@ -31,7 +31,7 @@ namespace UI
         Capture m_Capture;
         Engine.Engine m_Engine;
 
-        int m_ExpectedFrame = 0;
+        int m_ExpectedFrame = 100;
         int m_ActualFrame = 0;
         int m_FramesDropped = 0;
 
@@ -83,11 +83,13 @@ namespace UI
 
                         Dispatcher.Invoke(new Action(() =>
                             {
-                                vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(imageToShow); //.Resize(540, 960, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC));
+                                if (imageToShow != null)
+                                    vidImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(imageToShow); 
+                                //.Resize(540, 960, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC));
                                 labelFrameNumber.Content = "Frame: " + m_ActualFrame;
                                 labelBallDescription.Content = m_Engine.Ball.ToString();
                                 labelPossessionSummary.Content = m_Engine.Stats.GetPossessionSummary();
-                                if(m_ActualFrame % 10 == 0)
+                                if (m_ActualFrame % 10 == 0)
                                     labelHighestSpeedDesc.Content = m_Engine.Stats.GetRecentHighestSpeedDesc();
                             }));
                         resized = null;
@@ -128,7 +130,7 @@ namespace UI
                 m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vidD.mp4"));
             }
 
-            m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 29);
+            m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 15);
 
             m_DisplayFrames = new Thread(ShowFrames);
             m_DisplayFrames.Start();
