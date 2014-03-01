@@ -74,11 +74,12 @@ namespace UI
                     Image<Bgr, byte> img = m_Capture.QueryFrame();
                     if (img != null)
                     {
-                        Image<Bgr, byte> resized = img; // img.Resize(720, 1280, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
+                        Image<Bgr, byte> resized = img; //.Rotate(-5, new Bgr(System.Drawing.Color.Blue)); // img.Resize(720, 1280, Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC);
 
                         m_Engine.ProcessNextFrame(resized);
                         var imageToShow = m_Engine.DebugImage;
                         //var imageToShow = Engine.ImageProcess.ThresholdHsv(img, 14, 37, 150, 256, 80, 256).Erode(2).Dilate(1).Erode(1);
+                        //var imageToShow = Engine.ImageProcess.PitchEdges(img);
 
                         Dispatcher.Invoke(new Action(() =>
                             {
@@ -115,8 +116,20 @@ namespace UI
         {
             m_Playing = true;
             m_Engine = new Engine.Engine();
-            m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vidC.mp4"));
+
+            if (RadioButtonWebcam.IsChecked.Value)
+            {
+                m_Capture = new Capture(0);
+                m_Capture.SetCaptureProperty(Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_FRAME_WIDTH, 1280);
+                m_Capture.SetCaptureProperty(Emgu.CV.CvEnum.CAP_PROP.CV_CAP_PROP_FRAME_HEIGHT, 720);
+            }
+            else
+            {
+                m_Capture = new Capture(System.IO.Path.GetFullPath(".\\..\\Videos\\vidD.mp4"));
+            }
+
             m_Timer = new Timer(ExpectedFrameUpdate, null, 0, 1000 / 29);
+
             m_DisplayFrames = new Thread(ShowFrames);
             m_DisplayFrames.Start();
         }
