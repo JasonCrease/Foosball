@@ -33,6 +33,8 @@ namespace Engine
             m_Pts[index].Enqueue(point);
         }
 
+        float m_XStart, m_XEnd;
+
         public LineSegment2DF CalcLine()
         {
             float avgX1, avgX3, avgY1, avgY3;
@@ -52,7 +54,19 @@ namespace Engine
                 avgY3 = m_Pts[5].Average(x => x.Y);
             }
 
-            return new LineSegment2DF(new PointF(avgX1, avgY1), new PointF(avgX3, avgY3));
+            if (avgX1 == avgX3)
+            {
+                m_XStart = avgX3;
+                m_XEnd = avgX3;
+            }
+            else
+            {
+                float gradient = (avgX3 - avgX1) / (avgY3 - avgY1);
+                m_XStart = avgX1 - (avgY1 * gradient);
+                m_XEnd = m_XStart + (650 * gradient);
+            }
+
+            return new LineSegment2DF(new PointF(m_XStart, 0), new PointF(m_XEnd, 650));
         }
 
         public bool IsFound
@@ -61,6 +75,23 @@ namespace Engine
             {
                 return m_Pts[2].Count > 0 && m_Pts[4].Count > 0 && m_Pts[1].Count > 0 && m_Pts[5].Count > 0;
             }
+        }
+
+        internal void FindMen(Image<Bgr, byte> PerspImage)
+        {
+            int height = 660;
+            int[,] vals = new int[3, height];
+            float gradient = (m_XStart - m_XEnd) / height ;
+
+            for (int y = 30; y < height; y++)
+            {
+                int x = (int)((gradient * y) + m_XStart);
+
+                vals[0, y] = PerspImage.Data[y, x, 0];
+                vals[1, y] = PerspImage.Data[y, x, 1];
+                vals[2, y] = PerspImage.Data[y, x, 2];
+            }
+
         }
     }
 

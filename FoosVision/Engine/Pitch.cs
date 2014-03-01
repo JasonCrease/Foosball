@@ -168,31 +168,28 @@ namespace Engine
             //DebugImage = ThresholdedPerspImage.Convert<Bgr, byte>();
             DebugImage = PerspImage;
 
-            for (int sliceNum = 0; sliceNum < 7; sliceNum++)
-                for (int mx = 0; mx < PitchWidth; mx++)
-                {
-                    int y = sliceYs[sliceNum];
-                    float intensity = convImage.Data[y, mx, 0];
-                    if (intensity > 400)
+            for (int poleNum = 0; poleNum < 8; poleNum++)
+                for (int sliceNum = 0; sliceNum < 7; sliceNum++)
+                    for (int mx = Poles[poleNum].SearchX - 20; mx < Poles[poleNum].SearchX + 20; mx++)
                     {
-                        CircleF circ = new CircleF(new PointF(mx, y), 3);
-                        //DebugImage.Draw(circ, new Bgr(0, intensity / 3, 150), 2);
-                        for (int i = 0; i < 8; i++)
+                        int y = sliceYs[sliceNum];
+                        float intensity = convImage.Data[y, mx, 0];
+                        if (intensity > 400)
                         {
-                            if (mx > Poles[i].SearchX - 20 && mx < Poles[i].SearchX + 20)
-                            {
-                                Poles[i].AddPoint(sliceNum, new PointF(mx, sliceYs[sliceNum]));
-                            }
+                            //CircleF circ = new CircleF(new PointF(mx, y), 3);
+                            //DebugImage.Draw(circ, new Bgr(0, intensity / 3, 150), 2);
+                            Poles[poleNum].AddPoint(sliceNum, new PointF(mx, sliceYs[sliceNum]));
                         }
                     }
-                }
 
             for (int i = 0; i < 8; i++)
             {
                 if (Poles[i].IsFound)
                 {
+                    Poles[i].FindMen(PerspImage);
                     var line = Poles[i].CalcLine();
                     DebugImage.Draw(line, new Bgr(20, 250, 50), 4);
+                    
                 }
             }
         }
