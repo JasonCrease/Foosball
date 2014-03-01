@@ -10,6 +10,7 @@ namespace Engine
 {
     public class Pitch
     {
+        public Pole[] Poles = new Pole[8];
         public const float PitchWidth = 1205;
         public const float PitchHeight = PitchWidth / 2;
         public const float Border = 30;
@@ -73,6 +74,19 @@ namespace Engine
             private set;
         }
 
+        public Pitch()
+        {
+            for (int i = 0; i < 8; i++ )
+                Poles[i] = new Pole(i);
+            Poles[0].SearchX = 61;
+            Poles[1].SearchX = 213;
+            Poles[2].SearchX = 380;
+            Poles[3].SearchX = 537;
+            Poles[4].SearchX = 694;
+            Poles[5].SearchX = 840;
+            Poles[6].SearchX = 1008;
+            Poles[7].SearchX = 1164;;
+        }
 
         public PointF TopLeft = PointF.Empty;
         public PointF TopRight = PointF.Empty;
@@ -85,6 +99,7 @@ namespace Engine
 
         public void Update(Image<Bgr, byte> nowImage)
         {
+            DebugImage = nowImage;
             DerivePitchEdges(nowImage);
 
             TopLeft = GetTopLeft();
@@ -107,7 +122,7 @@ namespace Engine
                 Emgu.CV.CvEnum.WARP.CV_WARP_FILL_OUTLIERS,
                 new Bgr(200, 200, 200)).Convert<Bgr, byte>();
             ThresholdedPerspImage = ImageProcess.ThresholdHsv(PerspImage, 22, 89, 33, 240, 40, 250).
-                ThresholdBinaryInv(new Gray(100), new Gray(30));
+                ThresholdBinaryInv(new Gray(100), new Gray(255));
 
             DerivePolePositions();
         }
@@ -116,7 +131,7 @@ namespace Engine
         {
             // Use a convolution to sharpen it. The centre needs to be about 
             int kernelHeight = 1;
-            int kernelWidth = 40;
+            int kernelWidth = 32;
             float kernelTotalWeight = 0;
             float kernelSize = kernelWidth * kernelHeight;
             float[,] kernelValues = new float[kernelHeight, kernelWidth];
@@ -125,12 +140,14 @@ namespace Engine
                 for (int j = 0; j < kernelWidth; j++)
                 {
                     float weight = 0f;
-                    int distFromCentre = Math.Abs(j - (kernelWidth / 2 - 1)) - 8;
+                    int distFromCentre = Math.Abs(j - (kernelWidth / 2 - 1));
 
-                    if (distFromCentre < 0)
-                        weight = Math.Abs(distFromCentre) * 2;
+                    if (distFromCentre < 3)
+                        weight = Math.Abs(distFromCentre) * 20;
+                    else if (distFromCentre < 10)
+                        weight = 0;
                     else
-                        weight = -(float)Math.Abs(distFromCentre);
+                        weight = -Math.Abs(distFromCentre);
 
                     kernelValues[i, j] = weight;
                     kernelTotalWeight += weight;
@@ -146,53 +163,42 @@ namespace Engine
 
             Image<Gray, float> convImage = ThresholdedPerspImage.Convolution(kernel);
 
-            int[] sliceYs = new int[] { 50, 200, 300, 380, 480, 550, 700 };
+            int[] sliceYs = new int[] { 50, 150, 220, 320, 410, 500, 600 };
 
-            DebugImage = ThresholdedPerspImage.Convert<Bgr, byte>();
+            //DebugImage = ThresholdedPerspImage.Convert<Bgr, byte>();
+            DebugImage = PerspImage;
 
             for (int sliceNum = 0; sliceNum < 7; sliceNum++)
                 for (int mx = 0; mx < PitchWidth; mx++)
                 {
-                    int y= sliceYs[sliceNum];
+                    int y = sliceYs[sliceNum];
                     float intensity = convImage.Data[y, mx, 0];
-                    if (intensity > 200)
+                    if (intensity > 400)
                     {
-                        CircleF circ = new CircleF(new PointF(mx, y), 5);
-                        DebugImage.Draw(circ, new Bgr(150, intensity, 0), 1);
+                        CircleF circ = new CircleF(new PointF(mx, y), 3);
+                        //DebugImage.Draw(circ, new Bgr(0, intensity / 3, 150), 2);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            if (mx > Poles[i].SearchX - 20 && mx < Poles[i].SearchX + 20)
+                            {
+                                Poles[i].AddPoint(sliceNum, new PointF(mx, sliceYs[sliceNum]));
+                            }
+                        }
                     }
                 }
-        }
 
-        private int CountBlackAlongOffsetOfLine(Point p1, Point p2, int offset)
-        {
-            int count = 0;
-            float angleEachTime = 0f;
-            int height = Math.Min(ThresholdedPerspImage.Height - p2.Y, p2.Y - p1.Y);
-
-            if (p2.X != p1.X)
-                angleEachTime = (float)(p2.X - p1.X) / (float)(p2.Y - p1.Y);
-
-            if (height <= 0)
-                return 0;
-
-            for (int yt = 0; yt < height; yt++)
+            for (int i = 0; i < 8; i++)
             {
-                int x = p1.X + (int)(yt * angleEachTime) + offset;
-                int y = p1.Y + yt;
-
-                if (x < ThresholdedPerspImage.Width && x > 0)
-                    if (ThresholdedPerspImage.Data[y, x, 0] == 0)
-                    {
-                        count++;
-                    }
+                if (Poles[i].IsFound)
+                {
+                    var line = Poles[i].CalcLine();
+                    DebugImage.Draw(line, new Bgr(20, 250, 50), 4);
+                }
             }
-
-            return count;
         }
 
         private Queue<LineSegment2D> m_TopBorderCandidateLines = new Queue<LineSegment2D>();
         private Queue<LineSegment2D> m_BottomBorderCandidates = new Queue<LineSegment2D>();
-
 
         private void DerivePitchEdges(Image<Bgr, Byte> image)
         {
