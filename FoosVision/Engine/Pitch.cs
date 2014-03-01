@@ -67,6 +67,12 @@ namespace Engine
             get;
             private set;
         }
+        public Image<Gray, Byte> ThresholdedCannyImage
+        {
+            get;
+            private set;
+        }
+
 
         public PointF TopLeft = PointF.Empty;
         public PointF TopRight = PointF.Empty;
@@ -100,70 +106,61 @@ namespace Engine
                 Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC,
                 Emgu.CV.CvEnum.WARP.CV_WARP_FILL_OUTLIERS,
                 new Bgr(200, 200, 200)).Convert<Bgr, byte>();
-            ThresholdedPerspImage = ImageProcess.ThresholdHsv(PerspImage, 22, 89, 33, 240, 40, 250);
+            ThresholdedPerspImage = ImageProcess.ThresholdHsv(PerspImage, 22, 89, 33, 240, 40, 250).
+                ThresholdBinaryInv(new Gray(100), new Gray(30));
 
             DerivePolePositions();
         }
 
         private void DerivePolePositions()
         {
-            var canny = PerspImage.Canny(200, 150);
-            var lines = canny.HoughLinesBinary(0.5, Math.PI / 360, 100, 300, 50)[0];
+            // Use a convolution to sharpen it. The centre needs to be about 
+            int kernelHeight = 1;
+            int kernelWidth = 40;
+            float kernelTotalWeight = 0;
+            float kernelSize = kernelWidth * kernelHeight;
+            float[,] kernelValues = new float[kernelHeight, kernelWidth];
 
-            PointF[] topPoints = new PointF[8];
-            PointF[] bottomPoints = new PointF[8];
-
-            for (int i = 0; i < 8; i++)
-            {
-                topPoints[i] = new PointF(PoleRelPositions[i], 0);
-                bottomPoints[i] = new PointF(PoleRelPositions[i], PitchHeight + Border * 2);
-            }
-
-            //m_WarpMatInv.ProjectPoints(topPoints);
-            //m_WarpMatInv.ProjectPoints(bottomPoints);
-
-            //for (int i = 0; i < 8; i++)
-            //    DebugImage.Draw(new LineSegment2DF(topPoints[i], bottomPoints[i]), new Bgr(Color.DarkSalmon), 3);
-
-            PointF[][] poleExact = new PointF[8][];
-
-            foreach (LineSegment2D line in lines)
-            {
-                Point p1 = new Point(line.P1.X, line.P1.Y);
-                Point p2 = new Point(line.P2.X, line.P2.Y);
-
-                if (p1.Y > p2.Y)
+            for (int i = 0; i < kernelHeight; i++)
+                for (int j = 0; j < kernelWidth; j++)
                 {
-                    var temp = p2;
-                    p2 = p1;
-                    p1 = temp;
+                    float weight = 0f;
+                    int distFromCentre = Math.Abs(j - (kernelWidth / 2 - 1)) - 8;
+
+                    if (distFromCentre < 0)
+                        weight = Math.Abs(distFromCentre) * 2;
+                    else
+                        weight = -(float)Math.Abs(distFromCentre);
+
+                    kernelValues[i, j] = weight;
+                    kernelTotalWeight += weight;
                 }
 
-                if ((line.Direction.X < 0.1f && line.Direction.X > -0.1f))
+            for (int i = 0; i < kernelHeight; i++)
+                for (int j = 0; j < kernelWidth; j++)
                 {
-                    int countLeft = CountBlackAlongOffsetOfLine(p1, p2, -8);
-                    int countRight = CountBlackAlongOffsetOfLine(p1, p2, 8);
+                    kernelValues[i, j] = kernelValues[i, j] / Math.Abs(kernelTotalWeight);
+                }
 
-                    if (countLeft * 2 > line.Length)
+            ConvolutionKernelF kernel = new ConvolutionKernelF(kernelValues);
+
+            Image<Gray, float> convImage = ThresholdedPerspImage.Convolution(kernel);
+
+            int[] sliceYs = new int[] { 50, 200, 300, 380, 480, 550, 700 };
+
+            DebugImage = ThresholdedPerspImage.Convert<Bgr, byte>();
+
+            for (int sliceNum = 0; sliceNum < 7; sliceNum++)
+                for (int mx = 0; mx < PitchWidth; mx++)
+                {
+                    int y= sliceYs[sliceNum];
+                    float intensity = convImage.Data[y, mx, 0];
+                    if (intensity > 200)
                     {
-                        PerspImage.Draw(new LineSegment2D(p1, p2), new Bgr(200, 0, 200), 3);
+                        CircleF circ = new CircleF(new PointF(mx, y), 5);
+                        DebugImage.Draw(circ, new Bgr(150, intensity, 0), 1);
                     }
-                    else if (countRight * 2 > line.Length)
-                        PerspImage.Draw(new LineSegment2D(p1, p2), new Bgr(0, 200, 0), 3);
-
                 }
-            }
-
-
-            for (int i = 0; i < 8; i++)
-            {
-                Point searchAreaTL = new Point((int)topPoints[i].X - 30, (int)topPoints[i].Y);
-                Point searchAreaTR = new Point((int)topPoints[i].X + 30, (int)topPoints[i].Y);
-                Point searchAreaBL = new Point((int)bottomPoints[i].X - 30, (int)bottomPoints[i].Y);
-                Point searchAreaBR = new Point((int)bottomPoints[i].X + 30, (int)bottomPoints[i].Y);
-                //poleExact[i] = FindPoleInArea(searchAreaTL, searchAreaTR, searchAreaBL, searchAreaBR);
-            }
-
         }
 
         private int CountBlackAlongOffsetOfLine(Point p1, Point p2, int offset)

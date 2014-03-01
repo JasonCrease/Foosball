@@ -33,8 +33,11 @@ namespace Engine
             // Updating 
 
             m_Ball.Update(tableImage);
-            if (m_FrameNumber % 5 == 0)
+            if (m_FrameNumber % 1== 0)
+            {
+                m_Pitch.DebugImage = DebugImage;
                 m_Pitch.Update(tableImage);
+            }
             m_Ball.SetBallRealPosition(m_Pitch.WarpMatrix);
             Stats.AddBall(m_Ball);
 
@@ -51,6 +54,8 @@ namespace Engine
             //DebugImage = DebugImage.WarpPerspective(m_Pitch.WarpMatrix, 1205, 800,
             //    Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC,
             //    Emgu.CV.CvEnum.WARP.CV_WARP_FILL_OUTLIERS, new Bgr(Color.Wheat));
+
+            DebugImage = m_Pitch.DebugImage;
 
             m_FrameNumber++;
         }
