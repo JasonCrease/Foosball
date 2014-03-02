@@ -77,21 +77,23 @@ namespace Engine
             }
         }
 
-        internal void FindMen(Image<Bgr, byte> PerspImage)
+        internal void FindMen(Image<Bgr, byte> perspImage)
         {
             int height = 660;
-            int[,] vals = new int[3, height];
+            Image<Bgr, byte> stripBgr = new Image<Bgr, byte> (1, height);
+            Image<Gray, byte> thresholded;
             float gradient = (m_XStart - m_XEnd) / height ;
 
-            for (int y = 30; y < height; y++)
+            for (int y = 0; y < height; y++)
             {
                 int x = (int)((gradient * y) + m_XStart);
 
-                vals[0, y] = PerspImage.Data[y, x, 0];
-                vals[1, y] = PerspImage.Data[y, x, 1];
-                vals[2, y] = PerspImage.Data[y, x, 2];
+                stripBgr.Data[y, 0, 0] = perspImage.Data[y, x, 0];
+                stripBgr.Data[y, 0, 1] = perspImage.Data[y, x, 1];
+                stripBgr.Data[y, 0, 2] = perspImage.Data[y, x, 2];
             }
 
+            thresholded = ImageProcess.ThresholdHsv(stripBgr, 0, 23, 45, 98, 100, 256);
         }
     }
 

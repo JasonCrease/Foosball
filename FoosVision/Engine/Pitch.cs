@@ -189,7 +189,6 @@ namespace Engine
                     Poles[i].FindMen(PerspImage);
                     var line = Poles[i].CalcLine();
                     DebugImage.Draw(line, new Bgr(20, 250, 50), 4);
-                    
                 }
             }
         }

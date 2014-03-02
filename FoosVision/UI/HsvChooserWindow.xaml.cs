@@ -40,12 +40,19 @@ namespace UI
 
             SliderHmin.Value = 21;
             SliderHmax.Value = 89;
-            SliderSmin.Value = 33;
-            SliderSmax.Value = 135;
+            SliderSmin.Value = 0;
+            SliderSmax.Value = 30;
             SliderVmin.Value = 42;
             SliderVmax.Value = 201;
 
-            RedrawTimer = new System.Threading.Timer(new System.Threading.TimerCallback(Redraw), null, 500, 5000);
+            SliderHmin.Value = 0;
+            SliderHmax.Value = 256;
+            SliderSmin.Value = 0;
+            SliderSmax.Value = 256;
+            SliderVmin.Value = 0;
+            SliderVmax.Value = 160;
+
+            RedrawTimer = new System.Threading.Timer(new System.Threading.TimerCallback(Redraw), null, 500, 2000);
 
             //ButtonGo_Click(this, null);
         }
@@ -75,7 +82,7 @@ namespace UI
             //System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             //sw.Start();
 
-            var tableImage = new Image<Emgu.CV.Structure.Bgr, byte>(System.IO.Path.GetFullPath(".\\..\\Images\\pic8.jpg"));
+            var tableImage = new Image<Emgu.CV.Structure.Bgr, byte>(System.IO.Path.GetFullPath(".\\..\\Images\\pic11.jpg"));
 
             //Engine.TableFinder finder = new Engine.TableFinder();
             //var points = finder.GetTableCorners(tableImage);
@@ -83,14 +90,14 @@ namespace UI
 
             //return;
 
-            m_Engine = new Engine.Engine();
-            m_Engine.ProcessNextFrame(tableImage);
-            
-            var resultImage = Engine.ImageProcess.ThresholdHsv(m_Engine.DebugImage, 
+            //m_Engine = new Engine.Engine();
+            //m_Engine.ProcessNextFrame(tableImage);
+
+            var resultImage = Engine.ImageProcess.ThresholdHsv(tableImage, 
                 (int)SliderHmin.Value, (int)SliderHmax.Value, 
                 (int)SliderSmin.Value, (int)SliderSmax.Value, 
                 (int)SliderVmin.Value, (int)SliderVmax.Value);
-            resultImage = resultImage.Erode(0);
+            //resultImage = resultImage.Erode(0);
 
 
             OrigImage.Source = UI.Utils.BitmapSourceConvert.ToBitmapSource(resultImage);
