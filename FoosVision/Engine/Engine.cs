@@ -15,11 +15,13 @@ namespace Engine
             m_Pitch = new Pitch();
             m_Ball = new Ball();
             Stats = new Stats();
+            m_PoleSet = new PoleSet();
         }
 
         public Stats Stats { get; private set; }
         private Pitch m_Pitch;
         private Ball m_Ball;
+        private PoleSet m_PoleSet;
 
         public Ball Ball { get { return m_Ball; } }
         private int m_FrameNumber = 0;
@@ -33,11 +35,15 @@ namespace Engine
             // Updating 
 
             m_Ball.Update(tableImage);
-            if (m_FrameNumber % 1== 0)
+
+
+            if (m_FrameNumber % 1 == 0)
             {
                 m_Pitch.DebugImage = DebugImage;
                 m_Pitch.Update(tableImage);
+                m_PoleSet.FindPoles(m_Pitch.ThresholdedPerspImage, m_Pitch.PerspImage);
             }
+
             m_Ball.SetBallRealPosition(m_Pitch.WarpMatrix);
             Stats.AddBall(m_Ball);
 
@@ -55,10 +61,11 @@ namespace Engine
             //    Emgu.CV.CvEnum.INTER.CV_INTER_CUBIC,
             //    Emgu.CV.CvEnum.WARP.CV_WARP_FILL_OUTLIERS, new Bgr(Color.Wheat));
 
-            DebugImage = m_Pitch.DebugImage;
+            DebugImage = m_PoleSet.DebugImage;
 
             m_FrameNumber++;
         }
 
     }
 }
+
